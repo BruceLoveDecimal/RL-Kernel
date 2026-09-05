@@ -4,6 +4,15 @@
 #include <torch/extension.h>
 #include <cuda_bf16.h>
 
+#if defined(KERNEL_ALIGN_WITH_CUDA) && !defined(USE_ROCM)
+torch::Tensor adaln_gate_residual_forward(torch::Tensor, torch::Tensor, torch::Tensor,
+                                         int64_t, int64_t);
+std::vector<torch::Tensor> adaln_gate_residual_backward(
+    torch::Tensor, torch::Tensor, torch::Tensor, std::vector<int64_t>,
+    bool, bool, int64_t, int64_t);
+std::string adaln_gate_residual_build_fingerprint();
+#endif
+
 // Fused LogP Declarations
 torch::Tensor fused_logp_forward(torch::Tensor logits, torch::Tensor token_ids);
 
@@ -362,6 +371,12 @@ at::Tensor prefix_shared_attention(
 
 // PyBind11 Module Registration
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+#if defined(KERNEL_ALIGN_WITH_CUDA) && !defined(USE_ROCM)
+    m.def("adaln_gate_residual_forward", &adaln_gate_residual_forward);
+    m.def("adaln_gate_residual_backward", &adaln_gate_residual_backward);
+    m.def("adaln_gate_residual_build_fingerprint", &adaln_gate_residual_build_fingerprint);
+#endif
+
     m.doc() = "RL-Kernel High-Performance Operator Extension Library";
 
     m.def("fused_logp", &fused_logp_forward, "Fused logp forward fallback");

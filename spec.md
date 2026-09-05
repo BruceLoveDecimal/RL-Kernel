@@ -1,6 +1,7 @@
 # adaln_gate_residual：WS1 实现与验证规格
 
-状态：设计稿；本次只提交规格，尚未实现或运行 GPU 验收。
+状态：设计已提交；初版三后端代码及 CPU 验证已完成，GPU 编译/验收待执行。
+最新实测记录见 `docs/operators/adaln-gate-residual.md`。
 分支：`feat/adaln-gate-residual`。
 基线：2026-09-05 拉取的 `upstream/main`，`01b4ae410ae27aa0ff93bb48300c05158ef2968e`。
 
@@ -249,4 +250,4 @@ GPU 内用 CUDA events，预热至少 20 次、正式至少 100 次，排除编�
 - [ ] benchmark、真实环境、机器可读报告、复现命令、文档及相关回归检查齐全。
 
 实施顺序：先固定 oracle/bit harness 和 CPU API，再 CUDA，随后 Triton，最后完成注册、集成、真实尺寸及跨 SM 验证、性能和文档。
-当前交付仅此设计稿，上述复选框均保留未完成状态。
+初版实现和 CPU 检查已落地；在 GPU 编译、逐位验收和性能报告完成前，上述完整验收复选框保留未完成状态。

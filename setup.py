@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2026 RL-Kernel Contributors
 
+import hashlib
 import importlib.util
 import os
 import warnings
@@ -145,6 +146,7 @@ def get_extensions():
             # This source contains NVIDIA PTX (cp.async, ldmatrix, and mma.sync).
             # The ROCm dispatcher falls back to PyTorch SDPA for this operator.
             cuda_sources.append("csrc/cuda/attention/prefix_shared_attention.cu")
+            cuda_sources.append("csrc/cuda/adaln_gate_residual.cu")
 
         nvcc_flags = ["-O3", "-Xfatbin", "-compress-all"]
         if envs.env_flag(envs.KERNEL_ALIGN_USE_FAST_MATH):
@@ -252,6 +254,16 @@ def get_extensions():
 
         if is_rocm:
             nvcc_flags = _filter_rocm_incompatible_nvcc_flags(nvcc_flags)
+
+        if not is_rocm:
+            if envs.env_flag(envs.KERNEL_ALIGN_USE_FAST_MATH):
+                raise RuntimeError("adaln_gate_residual requires KERNEL_ALIGN_USE_FAST_MATH=0")
+            nvcc_flags.append("--ftz=false")
+            adaln_source = Path("csrc/cuda/adaln_gate_residual.cu").read_bytes()
+            adaln_build = hashlib.sha256(
+                adaln_source + repr((nvcc_flags, torch.__version__, torch.version.cuda)).encode()
+            ).hexdigest()
+            nvcc_flags.append(f'-DADALN_BUILD_FINGERPRINT="{adaln_build}"')
 
         extensions.append(
             CUDAExtension(

@@ -32,6 +32,30 @@ def _load_object(path: str) -> Any:
 
 
 OP_SPECS = {
+    "adaln_gate_residual": OperatorSpec(
+        name="adaln_gate_residual",
+        op_class="elementwise",
+        gold_path=(
+            "rl_engine.kernels.ops.pytorch.modulation.adaln_gate_residual."
+            "NativeAdaLNGateResidualOp"
+        ),
+        gold_method="forward_fp32",
+        candidate_paths={
+            "pytorch": (
+                "rl_engine.kernels.ops.pytorch.modulation.adaln_gate_residual."
+                "NativeAdaLNGateResidualOp"
+            ),
+            "cuda": (
+                "rl_engine.kernels.ops.cuda.modulation.adaln_gate_residual."
+                "CudaAdaLNGateResidualOp"
+            ),
+            "triton": (
+                "rl_engine.kernels.ops.triton.modulation.adaln_gate_residual."
+                "TritonAdaLNGateResidualOp"
+            ),
+        },
+        grad_input_names=("x", "gate", "sublayer_out"),
+    ),
     "rms_norm": OperatorSpec(
         name="rms_norm",
         op_class="reduction",

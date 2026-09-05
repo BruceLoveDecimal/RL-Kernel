@@ -54,6 +54,16 @@ class _KernelEnumMeta(EnumMeta):
 
 
 class OpBackend(Enum, metaclass=_KernelEnumMeta):
+    PYTORCH_ADALN_GATE_RESIDUAL = (
+        "rl_engine.kernels.ops.pytorch.modulation.adaln_gate_residual.NativeAdaLNGateResidualOp"
+    )
+    TRITON_ADALN_GATE_RESIDUAL = (
+        "rl_engine.kernels.ops.triton.modulation.adaln_gate_residual.TritonAdaLNGateResidualOp"
+    )
+    CUDA_ADALN_GATE_RESIDUAL = (
+        "rl_engine.kernels.ops.cuda.modulation.adaln_gate_residual.CudaAdaLNGateResidualOp"
+    )
+
     # NVIDIA optimized stack
     FLASH_ATTN = "rl_engine.kernels.ops.cuda.attention.flash_attn.FlashAttentionOp"
     FLASHINFER = "rl_engine.kernels.ops.cuda.flashinfer.FlashInferOp"
@@ -622,6 +632,16 @@ class KernelRegistry:
             OpBackend.ASCEND_BATCH_INVARIANT_LOGP,
             OpBackend.PYTORCH_BATCH_INVARIANT_LOGP,
         ]
+        for platform, ops in self._priority_map.items():
+            ops["adaln_gate_residual"] = (
+                [
+                    OpBackend.CUDA_ADALN_GATE_RESIDUAL,
+                    OpBackend.TRITON_ADALN_GATE_RESIDUAL,
+                    OpBackend.PYTORCH_ADALN_GATE_RESIDUAL,
+                ]
+                if platform == "cuda"
+                else [OpBackend.PYTORCH_ADALN_GATE_RESIDUAL]
+            )
         logger.info(f"KernelRegistry initialized for {device_ctx.device_type}")
         self._adjust_priority_for_hardware()
         self._adjust_priority_from_env()
@@ -748,6 +768,11 @@ class KernelRegistry:
 
     def get_op(self, op_type: str, device: torch.device | str | None = None) -> Any:
         """Select the best legacy operator for the requested device."""
+
+        if op_type == "adaln_gate_residual":
+            from rl_engine.kernels.adaln_gate_residual import adaln_gate_residual
+
+            return adaln_gate_residual
 
         platform = self._platform_for_device(device)
         candidates = self._priority_map.get(platform, {}).get(op_type, [OpBackend.PYTORCH_NATIVE])

@@ -33,3 +33,5 @@ Every operator page should include:
 - [Sampling](sampling.md)
 - [Token Embedding](embedding.md)
 - [Operator Doc Template](../contributing/operator-doc-template.md)
+
+- [AdaLN gated residual](adaln-gate-residual.md): FP32/BF16 gated residual and fixed-order gate gradients.

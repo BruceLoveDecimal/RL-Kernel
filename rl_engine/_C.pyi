@@ -222,3 +222,21 @@ def rmsnorm_backward_dw(
     rstd: torch.Tensor,
     mask: torch.Tensor,
 ) -> torch.Tensor: ...
+def adaln_gate_residual_forward(
+    x: torch.Tensor,
+    gate: torch.Tensor,
+    sublayer_out: torch.Tensor,
+    threads: int,
+    grid_cap: int,
+) -> torch.Tensor: ...
+def adaln_gate_residual_backward(
+    dy: torch.Tensor,
+    gate: torch.Tensor,
+    sublayer_out: torch.Tensor,
+    gate_shape: list[int],
+    need_gate: bool,
+    need_sublayer: bool,
+    threads: int,
+    grid_cap: int,
+) -> list[torch.Tensor]: ...
+def adaln_gate_residual_build_fingerprint() -> str: ...
